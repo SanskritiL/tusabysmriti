@@ -2,6 +2,8 @@
 
 Put your image files here. Vite serves everything under `public/` from the **site root**, so a file named `hero.jpg` in this folder is available at **`/assets/hero.jpg`**.
 
+The JPEGs committed here are **temporary placeholders** (from [Lorem Picsum](https://picsum.photos)) so production builds and hosts like Cloudflare Pages ship real files. Replace them with your own photography when ready — keep the same filenames or update `SITE_IMAGES` in `src/main.js`.
+
 ## Expected filenames
 
 Match these names (or edit the `SITE_IMAGES` object at the top of `src/main.js`):
