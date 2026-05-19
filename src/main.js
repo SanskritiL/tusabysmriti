@@ -1,7 +1,4 @@
-import { Clerk } from "@clerk/clerk-js";
 import "./styles.css";
-
-const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 /** Digits only, with country code (e.g. 9779812345678). Set `VITE_WHATSAPP_NUMBER` in `.env` */
 const whatsappNumber = String(import.meta.env.VITE_WHATSAPP_NUMBER ?? "").replace(/\D/g, "");
@@ -50,9 +47,6 @@ const PORTFOLIO_ITEMS = [
   },
 ];
 
-let clerk = null;
-let authLoadError = null;
-let activeUserId = null;
 let currentView = "home";
 
 /** Tear down hero compare listeners before re-render */
@@ -60,19 +54,6 @@ let unbindHeroCompare = null;
 
 /** Tear down portfolio carousel listeners before re-render */
 let unbindPortfolioCarousel = null;
-
-function loadClerkUiBundle(publishableKey) {
-  const clerkDomain = atob(publishableKey.split("_")[2]).slice(0, -1);
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = `https://${clerkDomain}/npm/@clerk/ui@1/dist/ui.browser.js`;
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    script.onload = resolve;
-    script.onerror = () => reject(new Error("Failed to load @clerk/ui bundle"));
-    document.head.appendChild(script);
-  });
-}
 
 const products = [
   {
@@ -135,14 +116,6 @@ function addToCart(productId) {
   renderCart();
 }
 
-function isSignedIn() {
-  return Boolean(clerk?.user);
-}
-
-function getPrimaryEmail() {
-  return clerk?.user?.primaryEmailAddress?.emailAddress ?? "";
-}
-
 function navigateTo(view) {
   // First publish: waitlist route disabled — treat as home if something still links to it
   if (view === "waitlist") {
@@ -171,58 +144,6 @@ function bindScrollLinks() {
       }
     });
   });
-}
-
-function renderCheckoutAuth() {
-  if (!clerkPublishableKey) {
-    return `
-      <div class="rounded-lg border border-outline-variant/40 bg-surface-container-low p-6 text-left">
-        <h3 class="font-headline-md text-headline-md text-primary mb-2">Connect Clerk to enable accounts</h3>
-        <p class="text-secondary font-body-md mb-3">
-          Run <code class="rounded bg-secondary-fixed px-1 py-0.5 text-sm">clerk init</code> or add your publishable key to
-          <code class="rounded bg-secondary-fixed px-1 py-0.5 text-sm">.env</code>, then restart Vite.
-        </p>
-        <code class="block rounded bg-secondary-fixed px-3 py-2 text-sm">VITE_CLERK_PUBLISHABLE_KEY=pk_test_...</code>
-      </div>
-    `;
-  }
-
-  if (authLoadError) {
-    return `
-      <div class="rounded-lg border border-error/30 bg-error-container/30 p-6 text-left">
-        <h3 class="font-headline-md text-headline-md text-primary mb-2">Clerk could not load</h3>
-        <p class="text-secondary">${authLoadError}</p>
-      </div>
-    `;
-  }
-
-  if (!isSignedIn()) {
-    return `
-      <div class="rounded-lg border border-outline-variant/40 bg-background p-6 text-left">
-        <h3 class="font-headline-md text-headline-md text-primary mb-2">Sign in to check out</h3>
-        <p class="text-secondary font-body-md mb-4">
-          Create or access your tusabysmriti account before continuing with shipping.
-        </p>
-        <div data-auth-checkout></div>
-      </div>
-    `;
-  }
-
-  return `
-    <form class="checkout-form grid gap-4 text-left">
-      <label class="grid gap-2 font-label-sm text-label-sm uppercase tracking-wide text-secondary">
-        Email for order updates
-        <input type="email" value="${getPrimaryEmail()}" readonly class="w-full border border-outline-variant/50 bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface focus:border-primary focus:ring-0" />
-      </label>
-      <label class="grid gap-2 font-label-sm text-label-sm uppercase tracking-wide text-secondary">
-        Shipping address
-        <input type="text" placeholder="Street, city, state" class="w-full border border-outline-variant/50 bg-transparent px-4 py-3 text-body-md focus:border-primary focus:ring-0" />
-      </label>
-      <button type="button" class="w-full bg-primary px-6 py-4 font-label-sm text-label-sm uppercase tracking-[0.2em] text-on-primary transition-opacity hover:opacity-90">
-        Continue checkout
-      </button>
-    </form>
-  `;
 }
 
 function renderProducts() {
@@ -297,115 +218,36 @@ function renderCart() {
 }
 
 function renderProfileView() {
-  if (!clerkPublishableKey) {
-    return `
-      <section class="mx-auto max-w-container-max px-margin-mobile py-24 md:px-margin-desktop">
-        <div class="rounded-lg border border-outline-variant/40 bg-surface-container-low p-8">
-          <h3 class="font-headline-md text-headline-md text-primary mb-2">Connect Clerk to enable profiles</h3>
-          <p class="text-secondary font-body-md mb-3">
-            Run <code class="rounded bg-secondary-fixed px-1 py-0.5 text-sm">clerk init</code> or add your publishable key to
-            <code class="rounded bg-secondary-fixed px-1 py-0.5 text-sm">.env</code>, then restart Vite.
-          </p>
-          <code class="block rounded bg-secondary-fixed px-3 py-2 text-sm">VITE_CLERK_PUBLISHABLE_KEY=pk_test_...</code>
-        </div>
-      </section>
-    `;
-  }
-
-  if (authLoadError) {
-    return `
-      <section class="mx-auto max-w-container-max px-margin-mobile py-24 md:px-margin-desktop">
-        <div class="rounded-lg border border-error/30 bg-error-container/30 p-8">
-          <h3 class="font-headline-md text-headline-md text-primary mb-2">Clerk could not load</h3>
-          <p class="text-secondary">${authLoadError}</p>
-        </div>
-      </section>
-    `;
-  }
-
-  if (!isSignedIn()) {
-    return `
-      <section class="mx-auto max-w-container-max px-margin-mobile py-24 md:px-margin-desktop">
-        <div class="mb-10 max-w-xl">
-          <span class="font-label-sm text-label-sm uppercase text-primary tracking-widest">Your account</span>
-          <h2 class="font-display-lg text-display-lg-mobile md:text-display-lg mt-4 text-primary leading-tight">Sign in to view your profile</h2>
-          <p class="mt-4 font-body-lg text-body-lg text-secondary">Access your tusabysmriti account to manage your details, security settings, and preferences.</p>
-        </div>
-        <div class="max-w-md rounded-lg border border-outline-variant/30 bg-background p-8">
-          <div data-profile-signin></div>
-        </div>
-      </section>
-    `;
-  }
-
   return `
     <section class="mx-auto max-w-container-max px-margin-mobile py-24 md:px-margin-desktop">
-      <div class="mb-10">
-        <span class="font-label-sm text-label-sm uppercase text-primary tracking-widest">Your account</span>
-        <h2 class="font-display-lg text-display-lg-mobile md:text-display-lg mt-4 text-primary leading-tight">Manage your profile</h2>
-        <p class="mt-4 max-w-xl font-body-lg text-body-lg text-secondary">Update your personal details, security settings, and connected accounts.</p>
+      <div class="mb-10 max-w-xl">
+        <span class="font-label-sm text-label-sm uppercase text-primary tracking-widest">Personal service</span>
+        <h2 class="font-display-lg text-display-lg-mobile md:text-display-lg mt-4 text-primary leading-tight">
+          Orders are coordinated directly with the studio
+        </h2>
+        <p class="mt-4 font-body-lg text-body-lg text-secondary">
+          Account sign-in isn't available on this site. Share your email in the connect section below or reach out on WhatsApp — we'll follow up personally about your bespoke piece.
+        </p>
       </div>
-      <div class="profile-container min-h-[400px]" data-user-profile></div>
-    </section>
-  `;
-}
-
-function renderWaitlistView() {
-  if (!clerkPublishableKey) {
-    return `
-      <section class="mx-auto max-w-container-max px-margin-mobile py-24 md:px-margin-desktop">
-        <div class="rounded-lg border border-outline-variant/40 bg-surface-container-low p-8">
-          <h3 class="font-headline-md text-headline-md text-primary mb-2">Connect Clerk to enable the waitlist</h3>
-          <p class="text-secondary font-body-md mb-3">
-            Run <code class="rounded bg-secondary-fixed px-1 py-0.5 text-sm">clerk init</code> or add your publishable key to
-            <code class="rounded bg-secondary-fixed px-1 py-0.5 text-sm">.env</code>, then restart Vite.
-          </p>
-          <code class="block rounded bg-secondary-fixed px-3 py-2 text-sm">VITE_CLERK_PUBLISHABLE_KEY=pk_test_...</code>
-        </div>
-      </section>
-    `;
-  }
-
-  if (authLoadError) {
-    return `
-      <section class="mx-auto max-w-container-max px-margin-mobile py-24 md:px-margin-desktop">
-        <div class="rounded-lg border border-error/30 bg-error-container/30 p-8">
-          <h3 class="font-headline-md text-headline-md text-primary mb-2">Clerk could not load</h3>
-          <p class="text-secondary">${authLoadError}</p>
-        </div>
-      </section>
-    `;
-  }
-
-  return `
-    <section class="mx-auto max-w-container-max px-margin-mobile py-24 md:px-margin-desktop">
-      <div class="grid gap-16 md:grid-cols-12 md:items-start">
-        <div class="md:col-span-7 space-y-6">
-          <span class="font-label-sm text-label-sm uppercase text-primary tracking-widest">Early access</span>
-          <h2 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary leading-tight">Join the waitlist</h2>
-          <p class="font-body-lg text-body-lg text-secondary max-w-xl">
-            Our next collection is coming soon. Be the first to know when new handmade pieces are available — no spam, just a quiet heads-up when something beautiful is ready.
-          </p>
-          <div class="space-y-6 border-t border-outline-variant/30 pt-8">
-            <div>
-              <span class="font-label-sm text-label-sm uppercase text-tertiary">Priority access</span>
-              <p class="mt-2 font-body-md text-secondary">Waitlist members get 24-hour early access to new drops.</p>
-            </div>
-            <div>
-              <span class="font-label-sm text-label-sm uppercase text-tertiary">Behind the scenes</span>
-              <p class="mt-2 font-body-md text-secondary">Occasional updates on fabric sourcing and studio process.</p>
-            </div>
-            <div>
-              <span class="font-label-sm text-label-sm uppercase text-tertiary">Limited runs</span>
-              <p class="mt-2 font-body-md text-secondary">Each piece is made in small batches with archival care.</p>
-            </div>
-          </div>
-        </div>
-        <div class="md:col-span-5">
-          <div class="sticky top-28 rounded-lg border border-outline-variant/40 bg-background p-8 editorial-shadow">
-            <div data-clerk-waitlist></div>
-          </div>
-        </div>
+      <div class="flex flex-wrap gap-4">
+        ${whatsappChatUrl ? `
+          <a
+            href="${whatsappChatUrl}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center justify-center gap-2 border border-[#25D366] bg-[#25D366]/10 px-8 py-4 font-label-sm text-label-sm uppercase tracking-[0.2em] text-primary transition-colors hover:bg-[#25D366]/20"
+          >
+            <span class="material-symbols-outlined text-[22px]" aria-hidden="true">chat</span>
+            WhatsApp
+          </a>
+        ` : ""}
+        <button
+          type="button"
+          data-scroll-to="connect"
+          class="border border-primary px-8 py-4 font-label-sm text-label-sm uppercase tracking-[0.2em] text-primary transition-all hover:bg-primary hover:text-on-primary"
+        >
+          Connect & updates
+        </button>
       </div>
     </section>
   `;
@@ -934,12 +776,6 @@ function bindEvents() {
     });
   });
 
-  document.querySelectorAll("[data-open-sign-in]").forEach((button) => {
-    button.addEventListener("click", () => {
-      clerk?.openSignIn();
-    });
-  });
-
   document.querySelectorAll("[data-navigate]").forEach((link) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
@@ -950,50 +786,6 @@ function bindEvents() {
   bindScrollLinks();
   bindHeroCompareSlider();
   bindPortfolioCarousel();
-}
-
-function mountClerkElements() {
-  if (!clerkPublishableKey || authLoadError || !clerk) {
-    return;
-  }
-
-  const headerAuth = document.querySelector("[data-auth-header]");
-  if (headerAuth) {
-    if (isSignedIn()) {
-      headerAuth.innerHTML = "";
-      clerk.mountUserButton(headerAuth);
-    } else {
-      headerAuth.innerHTML = `
-        <button class="auth-link" type="button" data-open-sign-in>
-          Sign in
-        </button>
-      `;
-      headerAuth.querySelector("[data-open-sign-in]").addEventListener("click", () => {
-        clerk?.openSignIn();
-      });
-    }
-  }
-
-  const checkoutAuth = document.querySelector("[data-auth-checkout]");
-  if (checkoutAuth && !isSignedIn()) {
-    clerk.mountSignIn(checkoutAuth);
-  }
-
-  const userProfile = document.querySelector("[data-user-profile]");
-  if (userProfile && isSignedIn()) {
-    clerk.mountUserProfile(userProfile);
-  }
-
-  const profileSignin = document.querySelector("[data-profile-signin]");
-  if (profileSignin && !isSignedIn()) {
-    clerk.mountSignIn(profileSignin);
-  }
-
-  // First publish: waitlist removed — restore when ready:
-  // const waitlistEl = document.querySelector("[data-clerk-waitlist]");
-  // if (waitlistEl) {
-  //   clerk.mountWaitlist(waitlistEl);
-  // }
 }
 
 function renderHeader() {
@@ -1007,7 +799,6 @@ function renderHeader() {
         <a href="#" data-navigate="profile" class="font-body-md text-sm font-medium text-secondary transition-colors hover:text-primary md:text-base">Account</a>
       </div>
       <div class="flex flex-wrap items-center justify-end gap-2 md:gap-4">
-        <div data-auth-header></div>
         <button type="button" data-scroll-to="checkout" class="font-label-sm text-label-sm uppercase tracking-wide text-secondary transition-colors hover:text-primary">
           Bag <span data-cart-count>0</span>
         </button>
@@ -1074,33 +865,7 @@ function renderApp() {
 `;
 
   bindEvents();
-  mountClerkElements();
   renderCart();
 }
 
-async function startApp() {
-  if (clerkPublishableKey) {
-    try {
-      await loadClerkUiBundle(clerkPublishableKey);
-      clerk = new Clerk(clerkPublishableKey);
-      await clerk.load({
-        ui: { ClerkUI: window.__internal_ClerkUICtor },
-      });
-      activeUserId = clerk.user?.id ?? null;
-      clerk.addListener(({ user }) => {
-        const nextUserId = user?.id ?? null;
-        if (nextUserId !== activeUserId) {
-          activeUserId = nextUserId;
-          renderApp();
-        }
-      });
-    } catch (error) {
-      authLoadError =
-        error instanceof Error ? error.message : "Check your Clerk configuration.";
-    }
-  }
-
-  renderApp();
-}
-
-startApp();
+renderApp();

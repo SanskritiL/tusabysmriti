@@ -37,27 +37,3 @@ button,
 input {
   font: inherit;
 }
-
-[data-auth-header] {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-}
-
-[data-auth-header] .auth-link {
-  font-family: Manrope, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #5f5f58;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem 0;
-}
-
-[data-auth-header] .auth-link:hover {
-  color: #610000;
-}
