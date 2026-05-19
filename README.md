@@ -16,4 +16,4 @@ This site uses Vue-free Vite: run `npm run build` and deploy the **`dist/`** fol
 
 **Tailwind** is compiled via PostCSS (`tailwind.config.js`). Do **not** use `cdn.tailwindcss.com` in production — it warns and duplicates your real toolchain.
 
-If you see **`Failed to resolve module specifier "@clerk/clerk-js"`**, you are loading ES modules **without Vite**. Install `@clerk/clerk-js` and import from your entry file (`src/main.js`); browsers cannot resolve npm package names on their own.
+This project does **not** use Clerk. If your deployed site still throws errors about **`@clerk/clerk-js`**, remove any Clerk snippets from the hosted HTML/`src/*.js`, rebuild, and redeploy **`dist/`** from a branch that matches this repo.
