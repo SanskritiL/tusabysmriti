@@ -7,13 +7,15 @@ npm ci
 npm run dev
 ```
 
-## Production build / static hosting (GitHub Pages, GitLab Pages, etc.)
+## Production build / hosting (Cloudflare Pages)
 
-This site uses Vue-free Vite: run `npm run build` and deploy the **`dist/`** folder (bundled CSS + JS), not raw `index.html` + `/src/*.js`. Serving the repo root without building first leaves the dev entry (`/src/main.js`) in place; the browser cannot resolve npm package names like `@clerk/...` or `@scope/pkg` without Vite’s bundler.
+This site uses Vue-free Vite: run `npm run build` and serve the **`dist/`** folder (bundled CSS + JS), not raw `index.html` + `/src/*.js`. Serving the repo root without building first leaves the dev entry (`/src/main.js`) in place; the browser cannot resolve npm package names without Vite’s bundler.
 
-- **GitHub Pages (automated)**: push to `main` or `master` with `.github/workflows/deploy-github-pages.yml`, then enable **Settings → Pages → Build and deployment → GitHub Actions**.
-- **GitLab Pages (automated)**: `.gitlab-ci.yml` runs `npm ci && npm run build` and publishes the **`dist/`** output as the Pages artifact. After the pipeline succeeds, the site should load `./assets/*.js`, not `/src/main.js`. If you previously used a manual “folder” deployment from the repo root, switch to this pipeline or set your build to output **`dist/`** only.
-- **`VITE_*` variables**: expose them **before** `npm run build` in the workflow (for example echo into `.env.production.local` from encrypted repo secrets / variables) — Vite replaces `import.meta.env` at compile time only.
+**Cloudflare Pages** (recommended):
+
+1. Connect this repo and use **Framework preset: Vite** (or equivalent), **Build command**: `npm run build`, **Build output directory**: `dist`.
+2. `vite.config.js` defines a **`plugins` array** (even if empty). Cloudflare / Wrangler may inject tooling into it during deploy; without that array you can see deploy errors such as “could not find a valid plugins array.”
+3. **`VITE_*` variables**: add them under **Pages → Settings → Environment variables**, then redeploy — Vite inlines them at **build time** only.
 
 **Tailwind** is compiled via PostCSS (`tailwind.config.js`). Do **not** use `cdn.tailwindcss.com` in production — it warns and duplicates your real toolchain.
 
