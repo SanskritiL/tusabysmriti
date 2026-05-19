@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "clerk-cli": {
+      "source": "/var/folders/pg/9cw6qr25575_k8zgg0wwg3qr0000gn/T/clerk-cli-skill-CgdPoY",
+      "sourceType": "local",
+      "computedHash": "077324b75750d277ea9b6a4d5fc2ca6e90280aeedf194cffbd0a7398c0b258a1"
+    }
+  }
+}

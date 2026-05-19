@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
+
+.editorial-shadow {
+  box-shadow: 0 4px 20px -5px rgba(97, 0, 0, 0.05);
+}
+
+/** Horizontal portfolio carousel: hide scrollbar, keep touch/trackpad scroll */
+.portfolio-carousel-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.portfolio-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.parchment-texture {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuD7o74pW1AiEnLpenaXwADDXajRPBrm7Z_A4Wh6ekhk55b3canfNT7Z2frEDp9b1xAmH1PBDJICYOIuqY3GwjVdpxCaIuC58TaMXSV5804cGZcabqnPf1IloyrWR3zh9USLulJ_ZXgMG6ItRQuZ-cqcuXE_8zXnERVvzRIZ6rJYFCIVftp85ik6T31YZx6r0pZydgXwAiCu6s19_VJuj2v82O2UjH0HhxUDiWfBllTD8eUO1r2gpKLF1dq4jTZrhiLQc8y9DBbWYw);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+[data-auth-header] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+[data-auth-header] .auth-link {
+  font-family: Manrope, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5f5f58;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem 0;
+}
+
+[data-auth-header] .auth-link:hover {
+  color: #610000;
+}
