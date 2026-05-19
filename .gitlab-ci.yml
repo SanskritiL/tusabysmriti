@@ -1,0 +1,19 @@
+# GitLab Pages must publish the Vite production bundle (`dist/`), not the dev sources.
+# Otherwise the browser loads raw ESM (or stale bundles) and you can see errors like
+# "Failed to resolve module specifier \"@clerk/clerk-js\"".
+image: node:20-alpine
+
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+  script:
+    - npm ci
+    - npm run build
+    - mv dist public
+  artifacts:
+    paths:
+      - public
